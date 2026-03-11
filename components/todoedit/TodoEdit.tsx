@@ -1,25 +1,53 @@
 import { TodoContext } from "@/data/context/TodoContext";
 import { useRouter } from "expo-router";
 import { useContext, useState } from "react";
-import { Button, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  ActivityIndicator,
+  Button,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
-export default function TodoEdit() {
-  const [title, setTitle] = useState("");
-  const { addTodo } = useContext(TodoContext);
+export default function TodoEdit({ id }: { id?: string }) {
+  const { addTodo, todos, updateTodo } = useContext(TodoContext);
+  const todo = todos.find((t) => t.id === parseInt(id!));
+  const [title, setTitle] = useState(todo?.todo || "");
+  const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
+  const isCreating = id === "-1";
   const onSubmit = async () => {
-    await addTodo(title);
+    setIsEditing(true);
+    if (isCreating) {
+      await addTodo(title);
+    } else {
+      await updateTodo(parseInt(id!), title);
+    }
+    setIsEditing(false);
     router.back();
   };
+
   return (
     <View style={styles.container}>
-      <Text>Titre de la nouvelle TODO :</Text>
+      <Text>
+        {isCreating
+          ? "Titre de la nouvelle TODO :"
+          : "Nouveau titre de la TODO"}
+      </Text>
       <TextInput
         style={styles.input}
         value={title}
         onChangeText={(newTitle) => setTitle(newTitle)}
       />
-      <Button title="Ajouter" onPress={onSubmit} />
+      {isEditing ? (
+        <ActivityIndicator />
+      ) : (
+        <Button
+          title={isCreating ? "Ajouter" : "Modifier"}
+          onPress={onSubmit}
+        />
+      )}
     </View>
   );
 }

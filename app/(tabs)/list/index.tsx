@@ -12,7 +12,7 @@ export default function Index() {
           headerRight: () => (
             <Button
               onPress={() => {
-                router.navigate("/list/edit");
+                router.navigate("/list/-1");
               }}
               title="Créer"
             />

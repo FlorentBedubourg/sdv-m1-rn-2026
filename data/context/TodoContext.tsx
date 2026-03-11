@@ -1,17 +1,26 @@
 import { createContext, FC, PropsWithChildren, useState } from "react";
-import { getTodosOnDummyJson } from "../api/dummyJsonApi";
+import {
+  addTodoOnDummyJson,
+  deleteTodoOnDummyJson,
+  getTodosOnDummyJson,
+  updateTodoOnDummyJson,
+} from "../api/dummyJsonApi";
 import { Todo } from "../api/dummyJsonApiTypes";
 
 interface TodoContextProps {
   todos: Todo[];
   getTodos: () => Promise<void>;
   addTodo: (title: string) => Promise<void>;
+  updateTodo: (id: number, title: string) => Promise<void>;
+  deleteTodo: (id: number) => Promise<void>;
 }
 
 export const TodoContext = createContext<TodoContextProps>({
   todos: [],
   getTodos: async () => {},
-  addTodo: async (title: string) => {},
+  addTodo: async () => {},
+  updateTodo: async () => {},
+  deleteTodo: async () => {},
 });
 
 export const TodoProvider: FC<PropsWithChildren> = ({ children }) => {
@@ -25,16 +34,33 @@ export const TodoProvider: FC<PropsWithChildren> = ({ children }) => {
     }
   };
   const addTodo = async (title: string) => {
-    const newTodo: Todo = {
-      id: Math.max(...todos.map((t) => t.id || 0)) + 1,
-      todo: title,
-      completed: false,
-      userId: 5,
-    };
-    setTodos((prevTodos) => [...prevTodos, newTodo]);
+    const addedTodo = await addTodoOnDummyJson({ todo: title });
+    if (addedTodo === null) {
+      // TODO: handle error
+    } else {
+      setTodos((prevTodos) => [...prevTodos, addedTodo]);
+    }
+  };
+  const updateTodo = async (id: number, title: string) => {
+    const updatedTodo = await updateTodoOnDummyJson({ id, todo: title });
+    if (updatedTodo === null) {
+      // TODO: handle error
+    } else {
+      setTodos((prevTodos) =>
+        prevTodos.map((todo) => (todo.id === id ? updatedTodo : todo)),
+      );
+    }
+  };
+  const deleteTodo = async (id: number) => {
+    const result = await deleteTodoOnDummyJson(id);
+    if (result) {
+      setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== id));
+    }
   };
   return (
-    <TodoContext.Provider value={{ todos, getTodos, addTodo }}>
+    <TodoContext.Provider
+      value={{ todos, getTodos, addTodo, updateTodo, deleteTodo }}
+    >
       {children}
     </TodoContext.Provider>
   );

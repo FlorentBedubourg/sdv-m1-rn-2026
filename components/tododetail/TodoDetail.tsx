@@ -1,9 +1,16 @@
 import { TodoContext } from "@/data/context/TodoContext";
+import { useRouter } from "expo-router";
 import { useContext } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Button, StyleSheet, Text, View } from "react-native";
 
 export default function TodoDetail({ id }: { id: string }) {
-  const { todos } = useContext(TodoContext);
+  const { todos, deleteTodo } = useContext(TodoContext);
+
+  const router = useRouter();
+  const onDelete = async () => {
+    await deleteTodo(parseInt(id));
+    router.back();
+  };
 
   const todo = todos.find((t) => t.id === parseInt(id));
   return (
@@ -18,6 +25,7 @@ export default function TodoDetail({ id }: { id: string }) {
       </Text>
       <Text>{todo?.completed ? "Fait" : "A faire"}</Text>
       <Text>UserID : {todo?.userId}</Text>
+      <Button title="Supprimer" onPress={onDelete} />
     </View>
   );
 }
